@@ -3,8 +3,10 @@ import { validator } from "../Utils/Validator";
 import UploadAction from "../Models/UploadAction";
 import Action from "../Models/Action";
 import { Actions } from "../Utils/enums";
-import { ObjectId } from "mongoose";
 import { UploadToYoutube } from "../Service/UploadToYoutube";
+import { userChannel } from "../Utils/channel";
+import { upload } from "../Service/UploadFile";
+
 
 
 export default class UploadContent{
@@ -58,8 +60,15 @@ export default class UploadContent{
         try {
             const {action}=req.body
             const {raison,approved}=req.body
-            let newAction =await  Action.findByIdAndUpdate(action,{raison,approved})
-            if(newAction?.compte?.toString()==req.user?._id){
+            let newAction =await  Action.findById(action)
+            if(!newAction){
+                return res.status(404).json({
+                    status:404,
+                    message:"Action not found"
+                })
+            }
+            const Upload = await UploadAction.findOne({action})
+            if(newAction?.compte?.toString()!==req.user?._id){
                 return res.status(401).json({
                     status:401,
                     message:"you dont have right authorization to access this Action"
@@ -71,8 +80,16 @@ export default class UploadContent{
                 customessage:{},
                 callback:async(err,status)=>{
                     if(status){
-                        console.log(err,status)
-                        UploadToYoutube(status)
+                        const tokens = (req.user?.tokens)
+                        const payload = {
+                            title:Upload?.title,
+                            description:Upload?.description,
+                            categorie:Upload?.categoryId,
+                            tags:Upload?.tags,
+                            status:Upload?.privacyStatus,
+                            file:Upload?.videoUrl              
+                        };
+                        UploadToYoutube(tokens,payload)
                         res.send({
                             status:200,
                             message:"Action commited"
@@ -93,6 +110,7 @@ export default class UploadContent{
             throw error;
         }
 
-    }
+    }  
+    
 }
 

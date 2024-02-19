@@ -18,8 +18,10 @@ export default class AuthController{
     ]})(req,res,next)
     }
 
+    
     static callback(req :Request ,res :Response ,next :CallableFunction ){
-     passport.authenticate('google',{successMessage:"logged in",successRedirect:'http://localhost:5500/'})(req,res,next)
+        console.log(req.query.code)
+        passport.authenticate('google',{successMessage:"logged in",successRedirect:'http://localhost:5500'})(req,res,next)
     }
     
      static refresh(req : Request ,res : Response){

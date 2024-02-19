@@ -16,6 +16,7 @@ interface UploadInterface {
     categoryId : number
     privacyStatus : status
     keywords : string
+    thumbenail : string
 }
        
 const UploadAction = new Schema  <UploadInterface> ({
@@ -26,6 +27,7 @@ const UploadAction = new Schema  <UploadInterface> ({
     tags : [{type:String}],
     categoryId : {type:Number},
     privacyStatus:{type:String,default:status.s2},
+    thumbenail:{type:String},
     keywords:{type:String}
 })
 

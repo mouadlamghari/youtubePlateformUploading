@@ -11,7 +11,7 @@ const uploadVideo = upload.single("video")
 
 
 router.post('/upload',
-chechAuth,
+chechAuth,    
 checkAuthority,
 CheckType(uploadVideo),
 UploadContent.upload);

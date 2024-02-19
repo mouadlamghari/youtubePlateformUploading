@@ -21,13 +21,12 @@ export default class Editors{
      */
     static async editor(req :Request ,res:Response) {
         try{
-           //console.log( await Editor.listIndexes().then(res=>console.log(res)))
-           // methode to get to get indexes
+           console.log(req.body)
 
             //data validation
             await validator({body:req.body,
-                rules:{"username":"required|min:4","password":'required|min:8','name':'required','lastname':'required'},
-               customessage:{"username.required":"user is required"},
+                rules:{"username":"required|min:4","email":"required","password":'required|min:8','name':'required','lastname':'required'},
+               customessage:{},
                callback:async (err:any,status:any)=>{
                     if(!status){
                         // send error message

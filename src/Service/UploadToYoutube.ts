@@ -2,34 +2,47 @@ import fs from "fs"
 import {google} from "googleapis"
 import path from "path"
 import { OAuth2Client } from 'google-auth-library';
-const user = new OAuth2Client(process.env['CLIENT_ID'],process.env['CLIENT_SECRET'])
-// access token
-user.setCredentials({ access_token: ""});
-const Service = google.youtube({version:"v3",auth:user})
-export async function UploadToYoutube (data){
-    const url = path.resolve("uploads/1707939904612..mp4")
-    console.log(user)
+
+
+
+
+export async function UploadToYoutube (token,data){
+    
     try{
-       const res = await  Service.videos.insert({
-            part:"snippet,id",
-            requestBody:{
-                snippet:{
-                    title:"sothing new solthing freesh ",
-                    description:"mouad",
-                    tags:["mouad","upload","video"],
-                    categoryId:22,
-                },
-                status:{
-                    privacyStatus:"public"
-                }     
-            },
-            media:{
-                body:fs.createReadStream(url)
-            },
+        const authProvider = new OAuth2Client()
+        let checkAuth = await authProvider.verifyIdToken({idToken:token.id_token,audience:process.env['CLIENT_ID']})
+        
+        // credentials auth
+        const user = new OAuth2Client({
+            clientId :  process.env['CLIENT_ID'],
+            clientSecret : process.env['CLIENT_SECRET'],
+            redirectUri:"http://localhost:5500"  
         })
-        console.log(res)
-    }catch(err){
+        user.setCredentials(token);
+        // upload video
+        const Service = google.youtube({version:"v3",auth:user})
+        const url = path.resolve(data?.file|| "")
+        const res =await Service.videos.insert({
+        part:["snippet","status"],
+        requestBody:{
+            snippet:{            
+                title:data?.title,
+                categoryId:data?.categorie,
+                description:data.description,
+                tags:data?.tags
+            },  
+            status:{
+                privacyStatus:data.status
+            }
+        },
+        media:{
+            body:fs.createReadStream(url)
+        }
+       })
+       const response = await res.data
+       console.log(response)
+    }
+    catch(err){
         console.log(err)
-        throw err;
     }
 }
