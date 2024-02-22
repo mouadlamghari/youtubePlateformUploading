@@ -1,11 +1,9 @@
 import mongoose, { Schema ,ObjectId,model, PopulatedDoc  } from "mongoose";
 
-
 enum Actions{
     upload = 'upload',
     update = 'update', 
 }
-
 
 interface ActionInterface{
     editor : PopulatedDoc<Document>

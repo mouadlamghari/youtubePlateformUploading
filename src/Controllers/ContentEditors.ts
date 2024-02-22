@@ -14,26 +14,26 @@ import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import Editor from "../Models/Editor";
 import { generateAccess } from "../Utils/GenerateTokenAccess";
+import { handleErrors } from "../Utils/handelError";
 
 export default class Editors{
     /*
     create an editor
      */
     static async editor(req :Request ,res:Response) {
-        try{
-           console.log(req.body)
 
             //data validation
             await validator({body:req.body,
                 rules:{"username":"required|min:4","email":"required","password":'required|min:8','name':'required','lastname':'required'},
                customessage:{},
-               callback:async (err:any,status:any)=>{
+               callback:async (error:any,status:any)=>{
+                try {
                     if(!status){
                         // send error message
                        return  res.status(412).send({
                                     status:412,
                                     message:"Validation failed",
-                                    data:err
+                                    errors:error.errors
                         })
                     }
                     else{
@@ -44,6 +44,7 @@ export default class Editors{
                         password =await bcrypt.hash(password,salt)
                         /// create editor
                         const newEditor = await Editor.create({email,username,password,name,lastname});
+                
                         // token payload
                         let payload = {_id:newEditor.id,username,email}
                          // get privat  access token  
@@ -60,17 +61,19 @@ export default class Editors{
                          res.cookie("ACCESS_TOKEN",ACCESS_TOKEN,{maxAge:1000*60*30,secure:false,httpOnly:true})
                          res.cookie("REFRESH_TOKEN",REFRESH_TOKEN,{maxAge:1000*60*60*24,secure:false,httpOnly:true})
 
-                            res.send({success:"Editor created"})
+                           return  res.send({status:200,success:"Editor created"})
                     }
+                } catch (error) {
+                    return res.status(500)
+                    .json({
+                        status:400,
+                        errors:handleErrors(error) 
+                    })
+                }
+                    
                }
             })
-        }catch(err){
-            return res.status(500)
-            .send({
-                status:500,
-                errors:err
-            })
-        }
+        
     }
 
     static async invite(req : Request,res:Response){
@@ -128,8 +131,11 @@ export default class Editors{
                     maessage : "invitation does not exists"
                 })
             }
+            // update accepted
+            invitation.accepted="confirm";
+            invitation.save()
+
             // upadate the Editor
-            console.log({invitation})
             let editor = await Editor.findById(EditorId)
             editor?.Account.push((invitation.compteId as String))
             editor?.save()
@@ -153,6 +159,36 @@ export default class Editors{
 
     }
 
+    static async refuse(req : Request , res : Response){
+        try {
+            // retreive editor 
+            const EditorId = (req.user?._id) as string 
+            // get invitation id from the parameters
+            const {invitationId} = req.params  
+            // get the invitation
+            const invitation = await Invitation.findOne({_id:invitationId,EditorId})
+            if(!invitation){
+                return res.status(404)
+                .send({
+                    status:400,
+                    maessage : "invitation does not exists"
+                })
+            }
+            invitation.accepted="refuse";
+            return res.status(200)
+            .json({
+                status:200,
+                mesaage : "invitation refused"
+            })
+        } catch (error) {
+            return res.status(500)
+            .send({
+                status:500,
+                error : error?.message
+            })
+        }
+    }
+
     static login(req:Request,res:Response){
         try{
 
@@ -161,6 +197,7 @@ export default class Editors{
                 rules:{"username":"required","password":"required"},
                 customessage:{},
                 callback:async(err:any,status:any)=>{
+                    // validation failed
                 if(err){
                     return res.status(500).send({
                         status:500,
@@ -169,21 +206,24 @@ export default class Editors{
                     })
                 }
                 else{
-                    
+                    // check if user exixts
                     const user = await Editor.findOne({username:req.body.username});
-                    console.log(user,req.body)
                     if(user){
+                        // check if password match
                         const password =await bcrypt.compare(req.body.password,(user?.password as string))
                         if(password){
                             let payload = {_id:user.id,username:user.username,email:user.email}
                             let token = generateAccess(payload)
+                            // set token in token
                             res.cookie('ACCESS_TOKEN',token,{maxAge:1000*60*30,secure:false,httpOnly:true})
+                            // return success message
                             return  res.status(200)
                             .send({
                                 status:200,
                                 message:"login successfully"
                             })
                         }
+                        // return error if password does not match
                         return res.status(400)
                         .send({
                             status:400,
@@ -191,12 +231,12 @@ export default class Editors{
                         })
                         
                     }
+                    // return error if editor does not exists
                     return res.status(412).send({
                         status:400,
                         message : "Editor does not exists"
                     })
                 }
-                res.send({status})
             }
         })
     }

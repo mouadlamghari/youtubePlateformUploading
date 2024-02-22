@@ -8,6 +8,7 @@ import { envirements } from "./env.js"
 import * as Auth from "./Routes/Auth"
 import * as Editor from "./Routes/Editors"
 import * as Content from "./Routes/Content"
+import * as Ressource from "./Routes/Ressource"
 import mongoose from "mongoose"
 import crypto from "crypto"
 import { DbConnect } from "./Utils/connect.js"
@@ -29,15 +30,15 @@ app.use(express.urlencoded({extended:true}))
 
 app.use(session({name:"AUTH",
 secret:`${process.env.SESSION_SECRET}`,
-resave:false,
+resave:true,
 saveUninitialized:true,
 cookie:{maxAge:1000*60*60*24,httpOnly:false,secure:false}
 }));
 
 app.use(cors({
-    origin:"http://localhost:5500",
+    origin:"http://localhost:5174",
     credentials:true,
-    methods:"GET,POST"
+    methods:"GET,POST,PUT,DELETE"
 }))
 
 
@@ -79,9 +80,7 @@ passport.serializeUser((user,done)=>{
 })
 
 passport.deserializeUser(async(id:string,done)=>{
-    console.log(id)
     const user = await User.findOne({_id:id})
-    console.log({user})
     done(null,user)
 })
 
@@ -95,13 +94,10 @@ mongoose.connection.on("connected",()=>{
 })
 
 
-
-
 app.use('/auth',Auth.default)
 app.use('/Editors',Editor.default)
 app.use('/Content',Content.default)
-
-
+app.use('/ressource',Ressource.default)
 
 mongoose.set('debug',true)
 

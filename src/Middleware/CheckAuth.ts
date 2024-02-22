@@ -7,10 +7,15 @@ import crypto from "crypto"
 
 export default function chechAuth(req:Request,res:Response,next : NextFunction){
 
+
+        if(req.isAuthenticated()){
+            return next();
+        }
+
         // access token
         const accessToken : string  = ( req.cookies['ACCESS_TOKEN'] as string )
 
-        // get access token from file 
+        // get access tokens from file 
         const tokenPath :string = path.resolve("secrets_public.pem")
         const token : string = fs.readFileSync(tokenPath,"utf8")
         try{
@@ -18,7 +23,7 @@ export default function chechAuth(req:Request,res:Response,next : NextFunction){
             const decode = JWT.verify(accessToken,token)
             console.log(decode)
             req.user = decode
-            next()
+           return  next()
         }
         catch(err){
             // return unuthorized 

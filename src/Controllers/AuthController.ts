@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, response } from "express";
 import fs from "fs";
 import JWT from "jsonwebtoken";
 import passport from "passport";
@@ -17,11 +17,10 @@ export default class AuthController{
 
     ]})(req,res,next)
     }
-
     
     static callback(req :Request ,res :Response ,next :CallableFunction ){
         console.log(req.query.code)
-        passport.authenticate('google',{successMessage:"logged in",successRedirect:'http://localhost:5500'})(req,res,next)
+        passport.authenticate('google',{successMessage:"logged in",successRedirect:'http://localhost:5174/success'})(req,res,next)
     }
     
      static refresh(req : Request ,res : Response){
@@ -49,6 +48,28 @@ export default class AuthController{
             res.status(400).send({
                 status:400,
                 message:'Invalid refresh token'
+            })
+        }
+    }
+
+    static user(req : Request , res : Response){
+        console.log(req.user)
+        try {
+            const user ={
+                name : req?.user?.name,
+                email : req?.user?.email,
+                lastName : req?.user?.lastName,
+                picture: req?.user?.picture,
+                username : req?.user?.username
+            }
+            return res.send({
+                status:200,
+                user
+            })  
+        } catch (error) {
+            return res.json({
+                status:500,
+                error:error
             })
         }
     }
