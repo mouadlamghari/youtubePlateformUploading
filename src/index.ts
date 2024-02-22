@@ -108,7 +108,7 @@ app.use((err,req:Request,res:Response,next:CallableFunction)=>{
 })
 
 app.all("*",(req,res)=>{
-    res.json({
+    res.status(404).json({
         status:404,
         message:`Not Found ${req.url}`
     })

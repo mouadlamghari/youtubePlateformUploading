@@ -21,5 +21,14 @@ const Action = new Schema <ActionInterface>({
     action : {type : String , enum:Actions }
 })
 
+Action.virtual("uploads",{
+    ref:"UploadAction",
+    localField:"_id",
+    foreignField:"action",
+    justOne:true
+})
+
+Action.set("toJSON",{virtuals:true})
+Action.set("toObject",{virtuals:true})
 
 export default model("Action",Action)

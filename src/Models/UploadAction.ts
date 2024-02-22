@@ -1,3 +1,4 @@
+import { timeStamp } from "console";
 import mongoose, { ObjectId, Schema, model  } from "mongoose";
 
 
@@ -29,6 +30,6 @@ const UploadAction = new Schema  <UploadInterface> ({
     privacyStatus:{type:String,default:status.s2},
     thumbenail:{type:String},
     keywords:{type:String}
-})
+},{timestamps:true})
 
 export default model <UploadInterface> ('UploadAction',UploadAction);

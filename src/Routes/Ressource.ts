@@ -7,5 +7,6 @@ Router.get('/videos',RessourceController.getVidoes);
 Router.get('/actions',RessourceController.getActions);
 Router.get('/editors',RessourceController.getEditors);
 Router.get('/invitations',RessourceController.getInvitations);
+Router.get('/search',RessourceController.search);
 
 export default Router

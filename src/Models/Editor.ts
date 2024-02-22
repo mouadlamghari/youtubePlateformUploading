@@ -19,5 +19,18 @@ const Editor =new Schema <EditorInterface> ({
     Account : [{type:mongoose.Types.ObjectId,ref:"User"}]
 },{timestamps:true})
 
+Editor.virtual("actions",{
+    ref:"Action",
+    localField:"_id",
+    foreignField:"editor",
+    justOne:false
+})
+
+
+
+
+Editor.set('toObject',{virtuals:true})
+Editor.set('toJSON',{virtuals:true})
+
 
 export default model <EditorInterface>('Editor',Editor)
