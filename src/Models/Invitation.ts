@@ -1,12 +1,7 @@
 import mongoose,{ Schema,model,ObjectId } from "mongoose";
 
+import {InvitationInterface} from "../Inrefaces/InvitationInterface"
 
-interface InvitationInterface {
-    compteId : ObjectId
-    EditorId : ObjectId,
-    visited : Boolean,
-    accepted : string
-}
 
 enum comfirm {
     accept = "confirm",
@@ -14,11 +9,11 @@ enum comfirm {
 }
 
 
-const Invitation = new Schema <InvitationInterface> ({
+const Invitation = new Schema  ({
     compteId : {type : mongoose.Types.ObjectId,ref:"User"},
     EditorId : {type : mongoose.Types.ObjectId,ref:"Editor"},
     visited : {type:Boolean,default:false},
     accepted : {type:String,enum:comfirm}
 })
 
-export default model('Invitation',Invitation)
+export default model <InvitationInterface> ('Invitation',Invitation)

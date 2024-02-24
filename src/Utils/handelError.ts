@@ -1,8 +1,19 @@
-export const handleErrors = (err) => {
+import { ErrorInterface } from "../Inrefaces/ErrorInterface";
+
+interface ValidationErrors {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  password?: string;
+  username?: string;
+}
+
+export const handleErrors = (err:ErrorInterface) :ValidationErrors | undefined  => {
     // duplicate error
+    let errors : ValidationErrors ={};
     if (err.code === 11000) {
-        let errors={};
-        Object.keys(err.keyPattern).map(e=>errors[e]=`the ${e} is already in use`)
+        const errKey = err.keyPattern as ValidationErrors;
+        Object.keys(errKey).map((e)=>errors[e as keyof ValidationErrors ]=`the ${e} is already in use`)
         return errors
     }
     
@@ -11,9 +22,9 @@ export const handleErrors = (err) => {
         let errors = { email: "", firstName: "", lastName: "", password: "",username:"" }
       // destructuring inside the forEach, similar to (err) => {err.properties}
       Object.values(err.errors).forEach(({ properties }) => {
-        errors[properties.path] = properties.message
+        errors[properties.path as keyof ValidationErrors ] = properties.message
       })
+      return errors
     }
-    return errors
   }
 

@@ -1,21 +1,17 @@
 import fs from "fs";
-import Editor from "../Models/Editor";
-import { Mail } from "../Service/Mail";
-import { ApiError } from "../Utils/ApiError";
 import  JWT from "jsonwebtoken" 
 import { Response,Request } from "express";
 import path from "path"; 
-import crypto from "crypto"
 import bcrypt from "bcrypt"
 import { validator } from "../Utils/Validator";
 import Invitation from "../Models/Invitation";
-import { abort } from "process";
 import mongoose from "mongoose";
-import { ObjectId } from "mongodb";
 import Editor from "../Models/Editor";
 import { generateAccess } from "../Utils/GenerateTokenAccess";
 import { handleErrors } from "../Utils/handelError";
-
+import { User } from "../Inrefaces/UserI";
+import { EditorInterface } from "../Inrefaces/EditorInrerface";
+import { ErrorInterface } from "../Inrefaces/ErrorInterface";
 export default class Editors{
     /*
     create an editor
@@ -67,7 +63,7 @@ export default class Editors{
                     return res.status(500)
                     .json({
                         status:400,
-                        errors:handleErrors(error) 
+                        errors:handleErrors(error as ErrorInterface) 
                     })
                 }
                     
@@ -94,7 +90,8 @@ export default class Editors{
                         })                                   
                     }
                     else{
-                        const compteId = (req.user?._id as String)
+                        const user = req.user as User
+                        const compteId = (user._id as String)
                         const {EditorId} = req.body
                         console.log(mongoose.Types.ObjectId.isValid(EditorId),compteId)
                         const data = await Invitation.create({compteId,EditorId})
@@ -119,7 +116,8 @@ export default class Editors{
     static async accept(req : Request,res : Response){
         try{
             // retreive editor 
-            const EditorId = (req.user?._id) as string 
+            const editorReq = req.user as EditorInterface
+            const EditorId = (editorReq?._id) 
             // get invitation id from the parameters
             const {invitationId} = req.params  
             // get the invitation
@@ -134,10 +132,12 @@ export default class Editors{
             // update accepted
             invitation.accepted="confirm";
             invitation.save()
+            
 
             // upadate the Editor
             let editor = await Editor.findById(EditorId)
-            editor?.Account.push((invitation.compteId as String))
+            const comptId =(invitation.compteId as any)
+            editor?.Account.push(invitation.compteId)
             editor?.save()
             // sens success stataus
             res.status(200)
@@ -161,8 +161,9 @@ export default class Editors{
 
     static async refuse(req : Request , res : Response){
         try {
-            // retreive editor 
-            const EditorId = (req.user?._id) as string 
+            // retreive editor
+            const reqEditor =  req.user as EditorInterface
+            const EditorId = (reqEditor._id) 
             // get invitation id from the parameters
             const {invitationId} = req.params  
             // get the invitation
@@ -181,10 +182,11 @@ export default class Editors{
                 mesaage : "invitation refused"
             })
         } catch (error) {
-            return res.status(500)
-            .send({
+            let message;
+            if(error instanceof Error) message = error.message;
+            return res.status(500).send({
                 status:500,
-                error : error?.message
+                error : message
             })
         }
     }
@@ -241,7 +243,9 @@ export default class Editors{
         })
     }
     catch(err){
-        throw Error(err.message)
+        if(err instanceof Error){
+            throw Error(err.message)
+        }
     }
     }
 

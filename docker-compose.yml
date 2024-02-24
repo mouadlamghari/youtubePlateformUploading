@@ -1,0 +1,28 @@
+version: '3.7'
+services : 
+  nodejs :
+    build : 
+      context : .
+      dockerfile : dockerfile
+      target : base
+    volumes : 
+      - ./src:/app/src
+      - /app/node_modules
+    ports :
+      - "3000:3000"
+    env_file:
+      - ./src/.env
+    depends_on:
+      - mongo
+    command : npm run start:dev
+  mongo:
+    image : mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports : 
+      - "27017:27017"
+    volumes :
+      - mongo-db:/data/db
+volumes:
+  mongo-db:

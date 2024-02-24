@@ -1,35 +1,31 @@
 import express, { Request, Response } from "express"
 import cors from "cors"
-import {Strategy as Google} from "passport-google-oauth20"
+import {Strategy as Google,Profile} from "passport-google-oauth20"
 import session from "express-session"
 import passport from "passport"
 import {config} from "dotenv"
-import { envirements } from "./env.js"
+import { envirements } from "./env"
 import * as Auth from "./Routes/Auth"
 import * as Editor from "./Routes/Editors"
 import * as Content from "./Routes/Content"
 import * as Ressource from "./Routes/Ressource"
 import mongoose from "mongoose"
-import crypto from "crypto"
-import { DbConnect } from "./Utils/connect.js"
-import User from "./Models/User.js"
+import { DbConnect } from "./Utils/connect"
+import User from "./Models/User"
 import cookieParser from 'cookie-parser'
-import { abort } from "process"
-import { google } from "googleapis"
-import fs from "fs"
 import path from "path"
+
+config({path:path.resolve(__dirname,'.env')})
 const app = express()
 
 
-
-config()
 app.use(cookieParser())
 app.use(express.json())
 
 app.use(express.urlencoded({extended:true}))
 
 app.use(session({name:"AUTH",
-secret:`${process.env.SESSION_SECRET}`,
+secret:`${process.env["SESSION_SECRET"]}`,
 resave:true,
 saveUninitialized:true,
 cookie:{maxAge:1000*60*60*24,httpOnly:false,secure:false}
@@ -44,6 +40,7 @@ app.use(cors({
 
 
 
+
 passport.use( new Google({
     clientID: `${envirements.CLIENT_ID}`,
     clientSecret: `${envirements.CLIENT_SECRET}`,
@@ -54,15 +51,15 @@ passport.use( new Google({
     "https://www.googleapis.com/auth/youtube",
     "https://www.googleapis.com/auth/youtubepartner",
     "https://www.googleapis.com/auth/youtube.force-ssl"],
-},async function(request,accessToken,refresh,tokens,profile,done){
+},async function(request:Request,accessToken:string,refresh:string,tokens:Object,profile:Profile,done:CallableFunction){
 
     const user = await User.findOneAndUpdate({email:profile?._json?.email},{tokens})
     if(!user){
         const newuser = await User.create({
             name: profile._json?.family_name,
-            lastName:profile._json?.given_name,
-            email:profile._json.email,
-            picture:profile._json.picture,
+            lastName:profile?._json?.given_name,
+            email:profile?._json.email,
+            picture:profile?._json.picture,
             access_token:accessToken,
             tokens:tokens
         })
@@ -99,10 +96,10 @@ app.use('/Editors',Editor.default)
 app.use('/Content',Content.default)
 app.use('/ressource',Ressource.default)
 
-mongoose.set('debug',true)
+// mongoose.set('debug',true)
 
-app.use((err,req:Request,res:Response,next:CallableFunction)=>{
-    res.json({
+app.use((err:Error,req:Request,res:Response,next:CallableFunction)=>{
+    return  res.json({
         err:err
     })
 })
@@ -117,5 +114,5 @@ app.all("*",(req,res)=>{
 
 app.listen(3000,()=>{
     DbConnect()
-    console.log(`runing on ${3000} port`)
+    console.log(`runing on port ${3000}   `)
 })

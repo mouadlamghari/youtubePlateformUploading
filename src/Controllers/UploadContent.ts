@@ -4,8 +4,12 @@ import UploadAction from "../Models/UploadAction";
 import Action from "../Models/Action";
 import { Actions } from "../Utils/enums";
 import { UploadToYoutube } from "../Service/UploadToYoutube";
-import { userChannel } from "../Utils/channel";
 import { upload } from "../Service/UploadFile";
+import { EditorInterface } from "../Inrefaces/EditorInrerface";
+import { User as UserInterface } from "../Inrefaces/UserI";
+import User from "../Models/User";
+import { TokenInterface } from "../Inrefaces/TokenInterface";
+import { dataType } from "../Inrefaces/DataType";
 
 
 
@@ -37,7 +41,8 @@ export default class UploadContent{
                     else{
                     const {title,description,tags,categoryId,privacyStatus,keywords}=req.body
                     const {account}=req.query
-                    const editor=req.user._id
+                    const reqEditor = req?.user as EditorInterface
+                    const editor=reqEditor._id
                     const action=Actions.upload
                     const videoUrl = req.file?.path
                     const newAction = await Action.create({compte:account,editor,action})
@@ -68,7 +73,8 @@ export default class UploadContent{
                 })
             }
             const Upload = await UploadAction.findOne({action})
-            if(newAction?.compte?.toString()!==req.user?._id){
+            const user = req?.user as UserInterface
+            if(newAction?.compte?.toString()!==user._id){
                 return res.status(401).json({
                     status:401,
                     message:"you dont have right authorization to access this Action"
@@ -78,17 +84,18 @@ export default class UploadContent{
                 body:req.body,
                 rules:{"approved":"required|boolean","reason":"required_if:approved,false"},
                 customessage:{},
-                callback:async(err,status)=>{
+                callback:async(err:any,status:string)=>{
                     if(status){
-                        const tokens = (req.user?.tokens)
+                        const tokens = (user?.tokens) as TokenInterface
+                        const categorieId = ((Upload?.categoryId || 0) as unknown) as string
                         const payload = {
                             title:Upload?.title,
                             description:Upload?.description,
-                            categorie:Upload?.categoryId,
+                            categorie:categorieId,
                             tags:Upload?.tags,
                             status:Upload?.privacyStatus,
                             file:Upload?.videoUrl              
-                        };
+                        } as dataType;
                         UploadToYoutube(tokens,payload)
                         res.send({
                             status:200,

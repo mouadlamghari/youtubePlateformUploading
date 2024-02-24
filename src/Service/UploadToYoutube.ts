@@ -2,11 +2,16 @@ import fs from "fs"
 import {google} from "googleapis"
 import path from "path"
 import { OAuth2Client } from 'google-auth-library';
+import { TokenInterface } from "../Inrefaces/TokenInterface";
+import { dataType } from "../Inrefaces/DataType";
 
 
 
 
-export async function UploadToYoutube (token,data){
+
+
+
+export async function UploadToYoutube (token:TokenInterface,data:dataType){
     
     try{
         const authProvider = new OAuth2Client()
@@ -39,8 +44,7 @@ export async function UploadToYoutube (token,data){
             body:fs.createReadStream(url)
         }
        })
-       const response = await res.data
-       console.log(response)
+      
     }
     catch(err){
         console.log(err)

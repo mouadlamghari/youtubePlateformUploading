@@ -1,13 +1,14 @@
 import { Request, Response } from "express";
 import Editor from "../Models/Editor";
-import mongoose, { ObjectId } from "mongoose";
 import { ObjectId } from "mongodb";
+import { EditorInterface } from "../Inrefaces/EditorInrerface";
+import mongoose from "mongoose";
 
 export async function checkAuthority (req :Request ,res :Response ,next : CallableFunction){
-        const user = req.user;
-        const {account} = req.query
+        const user = req.user as EditorInterface;
+        const account = (req.query.account as unknown) as  mongoose.Types.ObjectId
         const editor : any = await Editor.findById(user?._id)
-        const has = editor?.Account.find(e=>e==account)
+        const has = editor?.Account.find((e:mongoose.Types.ObjectId)=>e==account)
         if(has){
             return next()
         }

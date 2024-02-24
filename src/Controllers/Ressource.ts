@@ -7,6 +7,7 @@ import UploadAction from '../Models/UploadAction';
 import Editor from '../Models/Editor';
 import Invitation from '../Models/Invitation';
 import mongoose from 'mongoose';
+import {  User as UserInterface } from '../Inrefaces/UserI';
 
 export class RessourceController{
     static async getListChannels(req : Request,res : Response){
@@ -16,8 +17,8 @@ export class RessourceController{
                 clientSecret : process.env['CLIENT_SECRET'],
                 redirectUri:"http://localhost:5174"  
             })
-            
-            auth.setCredentials(req.user.tokens);
+            const user = req?.user as UserInterface
+            auth.setCredentials(user?.tokens);
     
             const service = google.youtube({version:"v3",auth})
             const channels =await service.channels.list({
@@ -31,12 +32,13 @@ export class RessourceController{
                 data
             })
         } catch (error) {
-            console.log(error)
-            return res.status(500)
-            .json({
-                status:500,
-                error:error.maessage
-            })
+            if(error instanceof Error){
+                return res.status(500)
+                .json({
+                    status:500,
+                    error:error.message
+                })
+            }
         }
         
     }
@@ -44,6 +46,7 @@ export class RessourceController{
     static async getVidoes(req : Request,res : Response){
         try {
             //const user = req.user._id;
+            console.log("hana")
             const videos = await UploadAction.find({action:{$ne:null}})
             .populate({path:"action",select:'_id,editor',match:{"approved":true,},populate:{path:"editor",select:["username","name"]}});
             let filterVideo = videos.filter(e=>e.action!=null);
@@ -51,16 +54,19 @@ export class RessourceController{
                     status : 200,
                     data : filterVideo})
         } catch (error) {
-            return res.status(500).send({
-                status:500,
-                error:error.message
-            })
+            if(error instanceof Error){
+                return res.status(500).send({
+                    status:500,
+                    error:error.message
+                })
+            }
         }
     }
 
     static async getActions(req : Request,res : Response){
         try {
-            const user = req?.user?._id
+            const reqUser = req?.user as UserInterface
+            const user = reqUser?._id
             let actions = await Action.find({compte:"65d32bc84cf801a46a4b9cfd"})
             .populate({path:"editor",select:["username","name","email"]})
             console.log(actions)
@@ -71,17 +77,20 @@ export class RessourceController{
                 data:actions 
             })
         } catch (error) {
-            return res.status(500)
-            .send({
-                status:500,
-                error : error.message
-            })
+            if(error instanceof Error){
+                return res.status(500)
+                .send({
+                    status:500,
+                    error : error.message
+                })
+            }
         }
     }
 
     static async getEditors(req:Request,res:Response){
         try {
-            const user = req?.user?._id
+            const reqUser = req?.user as UserInterface
+            const user = reqUser?._id
             const editors =await Editor.find({Account:{$elemMatch:{$eq:"65d32bc84cf801a46a4b9cfd"}}},{Account:0,password:0}).populate({path:"actions",populate:{path:"uploads"}}).lean()
             console.log(editors)
             return res.status(200)
@@ -90,17 +99,20 @@ export class RessourceController{
                 data:editors
             })
         } catch (error) {
-            return res.status(500)
-            .send({
-                status:500,
-                error : error?.message
-            })   
+            if(error instanceof Error){
+                return res.status(500)
+                .send({
+                    status:500,
+                    error : error?.message
+                })   
+            }
         }
     }
 
     static async getInvitations(req:Request,res:Response){
         try {
-            const user = req?.user?._id
+            const reqUser = req?.user as UserInterface
+            const user = reqUser?._id
             const invitations = await Invitation.find({compteId:"65d32bc84cf801a46a4b9cfd"})
             .populate({path:"EditorId",select:["username","email","name","lastname"]}); 
             console.log(invitations)
@@ -110,11 +122,13 @@ export class RessourceController{
                 data:invitations 
             })
         } catch (error) {
-            return res.status(500)
-            .json({
-                status:500,
-                errors : error.message
-            })
+            if(error instanceof Error){
+                return res.status(500)
+                .json({
+                    status:500,
+                    errors : error.message
+                })
+            }
         }
     }
 
@@ -180,11 +194,13 @@ export class RessourceController{
                 resultat:Editors
             })
         } catch (error) {
-            return  res.status(500)
-            .json({
-                status:500,
-                message:error.message
-            })
+            if(error instanceof Error){
+                return  res.status(500)
+                .json({
+                    status:500,
+                    message:error.message
+                })
+            }
         }
     }
 }

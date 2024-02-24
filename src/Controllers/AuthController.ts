@@ -4,6 +4,8 @@ import JWT from "jsonwebtoken";
 import passport from "passport";
 import path from "path";
 import crypto from "crypto"
+import { User } from "../Inrefaces/UserI";
+
 
 export default class AuthController{
 
@@ -53,14 +55,14 @@ export default class AuthController{
     }
 
     static user(req : Request , res : Response){
-        console.log(req.user)
-        try {
+       try {
+        const requser = req.user as User
             const user ={
-                name : req?.user?.name,
-                email : req?.user?.email,
-                lastName : req?.user?.lastName,
-                picture: req?.user?.picture,
-                username : req?.user?.username
+                name : requser.name,
+                email : requser.email,
+                lastName : requser.lastName,
+                picture: requser.picture,
+                username : requser.username
             }
             return res.send({
                 status:200,

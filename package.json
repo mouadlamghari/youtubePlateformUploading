@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": " copy -R src/.env /dist/.env "
+    "build": "tsc -p .",
+    "start:dev": "nodemon src/index.ts",
+    "start": "node ./dist/index.js NODE_PATH=./dist"
   },
   "author": "",
   "license": "ISC",
@@ -17,14 +19,14 @@
     "@types/express-session": "^1.17.10",
     "@types/mongodb": "^4.0.7",
     "@types/multer": "^1.4.11",
-    "@types/node": "^20.11.17",
+    "@types/node": "^20.11.20",
     "@types/passport": "^1.0.16",
     "@types/validatorjs": "^3.15.5",
     "bcrypt": "^5.1.1",
     "connect-mongo": "^5.1.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.2",
+    "dotenv": "^16.4.5",
     "express": "^4.18.2",
     "googleapis": "^133.0.0",
     "jsonwebtoken": "^9.0.2",
@@ -32,11 +34,13 @@
     "mongoose": "^8.1.2",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.9",
+    "nodemon": "^3.1.0",
     "passport": "^0.7.0",
     "passport-google-oauth2": "^0.2.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-youtube-v3": "^2.1.0",
     "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
     "validatorjs": "^3.22.1"
   },
   "devDependencies": {
