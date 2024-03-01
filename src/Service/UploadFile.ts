@@ -1,9 +1,17 @@
+import fs from "fs"
 import multer from "multer"
 import path from "path"
+import { pathToFileURL } from "url"
 
 const storage = multer.diskStorage({
     destination : (req,file,cb)=>{
-        cb(null,"uploads/")
+        const dir = path.dirname(__dirname)
+        const url = path.resolve(dir,"upload")
+        const exists = fs.existsSync(url)
+        if(!url){
+            fs.mkdirSync(url)
+        }
+        cb(null,url)
     },
     filename:(req,file,cb)=>{
         const supportedExt = [

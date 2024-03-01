@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p .",
-    "start:dev": "nodemon src/index.ts",
+    "start:dev": "nodemon ",
     "start": "node ./dist/index.js NODE_PATH=./dist"
   },
   "author": "",
@@ -28,6 +28,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.18.2",
+    "geoip-lite": "^1.4.10",
     "googleapis": "^133.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.3.0",
@@ -45,6 +46,7 @@
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.6",
+    "@types/geoip-lite": "^1.4.4",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/nodemailer": "^6.4.14",
     "@types/passport-google-oauth2": "^0.1.8",

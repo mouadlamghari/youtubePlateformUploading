@@ -6,10 +6,12 @@ import mongoose from "mongoose";
 
 export async function checkAuthority (req :Request ,res :Response ,next : CallableFunction){
         const user = req.user as EditorInterface;
-        const account = (req.query.account as unknown) as  mongoose.Types.ObjectId
+        const account = (req.params.id as unknown) as  mongoose.Types.ObjectId
         const editor : any = await Editor.findById(user?._id)
         const has = editor?.Account.find((e:mongoose.Types.ObjectId)=>e==account)
+        console.log(has,editor,account)
         if(has){
+            console.log(has)
             return next()
         }
         return res.status(401).send({

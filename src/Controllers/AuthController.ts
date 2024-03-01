@@ -5,6 +5,7 @@ import passport from "passport";
 import path from "path";
 import crypto from "crypto"
 import { User } from "../Inrefaces/UserI";
+import { generateAccess } from "../Utils/GenerateTokenAccess";
 
 
 export default class AuthController{
@@ -26,7 +27,7 @@ export default class AuthController{
     }
     
      static refresh(req : Request ,res : Response){
-        const refreshToken = req.header("AUTHORIZATION")
+        const refreshToken = req.cookies["REFRESH_TOKEN"]
         if(!refreshToken){
             return res.status(401).send({
                 message:"no refresh token provided"
@@ -34,19 +35,19 @@ export default class AuthController{
         }
         try {
             // secret access token 
-            const pathToken = path.resolve("secrect_private_refresh.pem")
+            const pathToken = path.resolve("src","secrect_public_refresh.pem")
             const token = fs.readFileSync(pathToken,"utf-8")
-            // secret refresh token
-            let pathToAccess : string = path.resolve("secrets_private.pem")
-            let privateAccess : Buffer =   fs.readFileSync(pathToAccess)
-            const privateA = crypto.createPrivateKey(privateAccess);
             
-            const decode =  JWT.verify(refreshToken,token);
-            const accessToken = JWT.sign(decode,privateA,{algorithm:"RS256",expiresIn:"30m"}) 
+            const decode =  JWT.verify(refreshToken,token) as {_id:string,username:string,email:string};
+            const accessToken = generateAccess({_id:decode._id,username:decode.username,email:decode.email})
             return res.cookie('ACCESS_TOKEN',accessToken,{secure:false,httpOnly:true,maxAge:1000*60*30})
-            .send("token retreive it")
+            .send({
+                status:200,
+                messgae:"token retreive it"
+            })
 
         } catch (error) {
+            console.log(error)
             res.status(400).send({
                 status:400,
                 message:'Invalid refresh token'

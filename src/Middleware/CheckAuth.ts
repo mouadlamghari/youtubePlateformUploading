@@ -16,7 +16,7 @@ export default function chechAuth(req:Request,res:Response,next : NextFunction){
         const accessToken : string  = ( req.cookies['ACCESS_TOKEN'] as string )
 
         // get access tokens from file 
-        const tokenPath :string = path.resolve("secrets_public.pem")
+        const tokenPath :string = path.resolve("src","secrets_public.pem")
         const token : string = fs.readFileSync(tokenPath,"utf8")
         try{
             // decode the user 

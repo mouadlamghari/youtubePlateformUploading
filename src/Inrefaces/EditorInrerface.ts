@@ -8,4 +8,5 @@ export interface EditorInterface{
     lastname?:string,
     email:string,
     Account:ObjectId[]
+    invitations : []
 }

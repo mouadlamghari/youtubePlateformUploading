@@ -4,12 +4,11 @@ import UploadAction from "../Models/UploadAction";
 import Action from "../Models/Action";
 import { Actions } from "../Utils/enums";
 import { UploadToYoutube } from "../Service/UploadToYoutube";
-import { upload } from "../Service/UploadFile";
 import { EditorInterface } from "../Inrefaces/EditorInrerface";
 import { User as UserInterface } from "../Inrefaces/UserI";
-import User from "../Models/User";
 import { TokenInterface } from "../Inrefaces/TokenInterface";
 import { dataType } from "../Inrefaces/DataType";
+import path from "path";
 
 
 
@@ -23,7 +22,7 @@ export default class UploadContent{
             "title":"required|min:1",
             description:"required|min:1",
             tags:"required",
-            categoryId:"required|numeric",
+            categorie:"required|numeric",
             privacyStatus:"required|string",
             keywords:"required|min:2|string",            
         },
@@ -40,12 +39,12 @@ export default class UploadContent{
                     }
                     else{
                     const {title,description,tags,categoryId,privacyStatus,keywords}=req.body
-                    const {account}=req.query
+                    const {id}=req.params
                     const reqEditor = req?.user as EditorInterface
                     const editor=reqEditor._id
                     const action=Actions.upload
-                    const videoUrl = req.file?.path
-                    const newAction = await Action.create({compte:account,editor,action})
+                    const videoUrl =  path.basename(req.file?.path)
+                    const newAction = await Action.create({compte:id,editor,action})
                     const newUpload = await UploadAction.create({action:newAction._id,title,description,tags,categoryId,privacyStatus,keywords,videoUrl})
                     res.status(200).send({
                         status:200,

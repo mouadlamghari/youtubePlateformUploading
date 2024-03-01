@@ -1,14 +1,7 @@
 import { ObjectId } from "mongodb";
 import mongoose, { Schema,model, PopulatedDoc } from "mongoose";
+import { EditorInterface } from "../Inrefaces/EditorInrerface";
 
-interface EditorInterface{
-    username:string,
-    password?:string,
-    name ?: string,
-    lastname?:string,
-    email:string,
-    Account:ObjectId[]
-}
 
 const Editor =new Schema <EditorInterface> ({
     username : {type:String,required:true,unique:true},
@@ -26,6 +19,13 @@ Editor.virtual("actions",{
     justOne:false
 })
 
+
+Editor.virtual("invitations",{
+    ref:"Invitation",
+    localField:"_id",
+    foreignField:"EditorId",
+    justOne:false
+})
 
 
 

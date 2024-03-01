@@ -10,7 +10,7 @@ const router = express.Router()
 const uploadVideo = upload.single("video")
 
 
-router.post('/upload',
+router.post('/upload/:id',
 chechAuth,    
 checkAuthority,
 CheckType(uploadVideo),

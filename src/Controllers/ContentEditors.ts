@@ -7,7 +7,7 @@ import { validator } from "../Utils/Validator";
 import Invitation from "../Models/Invitation";
 import mongoose from "mongoose";
 import Editor from "../Models/Editor";
-import { generateAccess } from "../Utils/GenerateTokenAccess";
+import { generateAccess, generateRefresh } from "../Utils/GenerateTokenAccess";
 import { handleErrors } from "../Utils/handelError";
 import { User } from "../Inrefaces/UserI";
 import { EditorInterface } from "../Inrefaces/EditorInrerface";
@@ -44,10 +44,10 @@ export default class Editors{
                         // token payload
                         let payload = {_id:newEditor.id,username,email}
                          // get privat  access token  
-                         let pathToAccess : string = path.resolve("secrets_private.pem")
+                         let pathToAccess : string = path.resolve("src","secrets_private.pem")
                          let privateA : string =   fs.readFileSync(pathToAccess,"utf-8")
                          // get private refresh token 
-                         let pathToefresh  : string = path.resolve("secrect_private_refresh.pem")
+                         let pathToefresh  : string = path.resolve("src","secrect_private_refresh.pem")
                          let privateR : string =   fs.readFileSync(pathToefresh,"utf-8")
                         
                          // generate token
@@ -60,6 +60,7 @@ export default class Editors{
                            return  res.send({status:200,success:"Editor created"})
                     }
                 } catch (error) {
+                    console.log(error)
                     return res.status(500)
                     .json({
                         status:400,
@@ -91,14 +92,20 @@ export default class Editors{
                     }
                     else{
                         const user = req.user as User
-                        const compteId = (user._id as String)
+                        const compteId = (user?._id as String)
                         const {EditorId} = req.body
-                        console.log(mongoose.Types.ObjectId.isValid(EditorId),compteId)
-                        const data = await Invitation.create({compteId,EditorId})
-                        
-                       return  res.send({
-                            status:200,
-                            message : 'Invitation send it successfully'
+                        const ExistsItem = await Invitation.find({$and:[{compteId},{EditorId},{accepted:false}]}) 
+                        if(!ExistsItem){
+                            const data = await Invitation.create({compteId,EditorId})
+                            return  res.send({
+                                status:200,
+                                message : 'Invitation send it successfully'
+                             })
+                        } 
+                        return res.status(400).
+                        json({
+                            status : 400,
+                            message : "Your are already Inviting this Editor"
                         })
                     }
                     
@@ -122,11 +129,21 @@ export default class Editors{
             const {invitationId} = req.params  
             // get the invitation
             const invitation = await Invitation.findOne({_id:invitationId,EditorId})
+            
+            // if alredy accepted
+            if(invitation.accepted=="confirm"){
+                res.json({
+                    status:500,
+                    message : "Somthing went wrong"
+                })
+            }
+
+            // check if invitation exixts
             if(!invitation){
                 return res.status(404)
                 .send({
-                    status:400,
-                    maessage : "invitation does not exists"
+                    status:401,
+                    message : "invitation does not exists"
                 })
             }
             // update accepted
@@ -176,6 +193,7 @@ export default class Editors{
                 })
             }
             invitation.accepted="refuse";
+            invitation.save()
             return res.status(200)
             .json({
                 status:200,
@@ -216,8 +234,10 @@ export default class Editors{
                         if(password){
                             let payload = {_id:user.id,username:user.username,email:user.email}
                             let token = generateAccess(payload)
+                            let refresh = generateRefresh(payload)
                             // set token in token
                             res.cookie('ACCESS_TOKEN',token,{maxAge:1000*60*30,secure:false,httpOnly:true})
+                            res.cookie('REFRESH_TOKEN',refresh,{maxAge:1000*60*60*24,secure:false,httpOnly:true})
                             // return success message
                             return  res.status(200)
                             .send({
@@ -248,5 +268,4 @@ export default class Editors{
         }
     }
     }
-
 }

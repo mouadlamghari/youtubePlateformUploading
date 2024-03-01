@@ -16,11 +16,11 @@ export class Mail {
         this.options = options
         this.mailer=mailer.createTransport(
             {
-                host: "sandbox.smtp.mailtrap.io",
+                host: "smtp-relay.brevo.com",
                 port: 587,
                 auth: {
                     user: '73120b75bed5ad',
-                    pass: process.env.PASSWORD
+                    pass: process.env['PASSWORD']
                 }
             }
         );
